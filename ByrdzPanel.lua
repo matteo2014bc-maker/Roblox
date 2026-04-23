@@ -1,4 +1,4 @@
--- [[ BYRDZ UI FRAMEWORK - v3.1 THE "PANEL" EDITION ]]
+-- [[ BYRDZ UI FRAMEWORK - v3.2 THE "COMPLETE" EDITION ]]
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -12,41 +12,19 @@ local Byrdz = {}
 function Byrdz:CreateWindow(customTitle)
 	local UIThemes = {
 		["Deep Sea Blue"] = Color3.fromRGB(0, 35, 102),
-		["Vampire Red"] = Color3.fromRGB(180, 0, 0),
-		["Toxic Green"] = Color3.fromRGB(50, 255, 50),
-		["Neon Pink"] = Color3.fromRGB(255, 20, 147),
-		["Golden Byrd"] = Color3.fromRGB(255, 215, 0),
-		["Aqua Marine"] = Color3.fromRGB(0, 255, 255),
 		["Midnight Gray"] = Color3.fromRGB(45, 45, 45),
-		["Pure White"] = Color3.fromRGB(255, 255, 255)
+		["Vampire Red"] = Color3.fromRGB(180, 0, 0),
+		["Toxic Green"] = Color3.fromRGB(50, 255, 50)
 	}
 
 	local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-	ScreenGui.Name = "Byrdz_Final_V3_1"
+	ScreenGui.Name = "Byrdz_Final_V3_2"
 	ScreenGui.ResetOnSpawn = false
-
-	-- [[ DRAGGABLE MINI OPEN BUTTON ]]
-	local OpenButton = Instance.new("TextButton", ScreenGui)
-	OpenButton.BackgroundColor3 = UIThemes["Deep Sea Blue"]
-	OpenButton.Position = UDim2.new(0, 20, 0.5, -20)
-	OpenButton.Size = UDim2.new(0, 60, 0, 60)
-	OpenButton.Visible = false
-	OpenButton.Text = "B"
-	OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	OpenButton.Font = Enum.Font.GothamBold
-	OpenButton.TextSize = 25
-	Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(0, 12)
-	Instance.new("UIStroke", OpenButton).Thickness = 2
-
-	local bDrag, bStart, bPos
-	OpenButton.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then bDrag = true bStart = i.Position bPos = OpenButton.Position end end)
-	UserInputService.InputChanged:Connect(function(i) if bDrag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - bStart OpenButton.Position = UDim2.new(bPos.X.Scale, bPos.X.Offset + d.X, bPos.Y.Scale, bPos.Y.Offset + d.Y) end end)
-	UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then bDrag = false end end)
 
 	-- [[ MAIN FRAME ]]
 	local MainFrame = Instance.new("Frame", ScreenGui)
 	MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	MainFrame.BackgroundTransparency = 0.2 
+	MainFrame.BackgroundTransparency = 0.1 
 	MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
 	MainFrame.Size = UDim2.new(0, 520, 0, 380)
 	Instance.new("UICorner", MainFrame)
@@ -56,8 +34,7 @@ function Byrdz:CreateWindow(customTitle)
 	TopBar.BackgroundColor3 = UIThemes["Deep Sea Blue"]
 	TopBar.Size = UDim2.new(1, 0, 0, 45)
 	Instance.new("UICorner", TopBar)
-
-	-- [[ BRANDING: BYRDZ | PANEL ]]
+	
 	local Title = Instance.new("TextLabel", TopBar)
 	Title.BackgroundTransparency = 1
 	Title.Position = UDim2.new(0, 20, 0, 0)
@@ -70,15 +47,7 @@ function Byrdz:CreateWindow(customTitle)
 	local subText = customTitle or "Panel"
 	Title.Text = "BYRDZ <font color='#AAAAAA'>|</font> " .. subText
 
-	local CloseBtn = Instance.new("TextButton", TopBar)
-	CloseBtn.BackgroundTransparency = 1
-	CloseBtn.Position = UDim2.new(1, -45, 0, 0)
-	CloseBtn.Size = UDim2.new(0, 45, 1, 0)
-	CloseBtn.Text = "X"
-	CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	CloseBtn.Font = Enum.Font.GothamBold
-	CloseBtn.TextSize = 22
-
+	-- [[ SIDEBAR ]]
 	local Sidebar = Instance.new("Frame", MainFrame)
 	Sidebar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 	Sidebar.BackgroundTransparency = 0.6
@@ -88,13 +57,10 @@ function Byrdz:CreateWindow(customTitle)
 	local TabList = Instance.new("UIListLayout", Sidebar)
 	TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	TabList.Padding = UDim.new(0, 6)
-	TabList.SortOrder = Enum.SortOrder.LayoutOrder
 
 	local PageFolder = Instance.new("Folder", MainFrame)
-	local tabCount = 0
 
-	function Byrdz:CreateTab(name, isSettings)
-		tabCount = tabCount + 1
+	function Byrdz:CreateTab(name)
 		local TabBtn = Instance.new("TextButton", Sidebar)
 		TabBtn.Size = UDim2.new(0.9, 0, 0, 40)
 		TabBtn.BackgroundTransparency = 1
@@ -102,8 +68,7 @@ function Byrdz:CreateWindow(customTitle)
 		TabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
 		TabBtn.Font = Enum.Font.GothamBold
 		TabBtn.TextSize = 14
-		TabBtn.LayoutOrder = isSettings and 9999 or tabCount
-
+		
 		local Page = Instance.new("ScrollingFrame", PageFolder)
 		Page.BackgroundTransparency = 1
 		Page.Position = UDim2.new(0, 140, 0, 55)
@@ -124,6 +89,7 @@ function Byrdz:CreateWindow(customTitle)
 
 		local Elements = {}
 
+		-- BUTTON
 		function Elements:CreateButton(text, callback)
 			local Btn = Instance.new("TextButton", Page)
 			Btn.Size = UDim2.new(0.95, 0, 0, 45)
@@ -136,6 +102,7 @@ function Byrdz:CreateWindow(customTitle)
 			Btn.MouseButton1Click:Connect(callback)
 		end
 
+		-- TOGGLE
 		function Elements:CreateToggle(text, callback)
 			local TglFrame = Instance.new("Frame", Page)
 			TglFrame.Size = UDim2.new(0.95, 0, 0, 45)
@@ -165,6 +132,7 @@ function Byrdz:CreateWindow(customTitle)
 			end)
 		end
 
+		-- SLIDER
 		function Elements:CreateSlider(text, min, max, callback)
 			local SldFrame = Instance.new("Frame", Page)
 			SldFrame.Size = UDim2.new(0.95, 0, 0, 60)
@@ -196,54 +164,43 @@ function Byrdz:CreateWindow(customTitle)
 			UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 			RunService.RenderStepped:Connect(function() if dragging then update() end end)
 		end
+
+		-- TEXTBOX
+		function Elements:CreateTextbox(text, placeholder, callback)
+			local TxtFrame = Instance.new("Frame", Page)
+			TxtFrame.Size = UDim2.new(0.95, 0, 0, 50)
+			TxtFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+			Instance.new("UICorner", TxtFrame)
+			local TxtLabel = Instance.new("TextLabel", TxtFrame)
+			TxtLabel.Text = "  " .. text
+			TxtLabel.Size = UDim2.new(0.4, 0, 1, 0)
+			TxtLabel.BackgroundTransparency = 1
+			TxtLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+			TxtLabel.Font = Enum.Font.GothamBold
+			TxtLabel.TextSize = 14
+			TxtLabel.TextXAlignment = Enum.TextXAlignment.Left
+			local Input = Instance.new("TextBox", TxtFrame)
+			Input.Size = UDim2.new(0.55, -10, 0, 30)
+			Input.Position = UDim2.new(0.4, 5, 0.5, -15)
+			Input.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			Input.TextColor3 = Color3.fromRGB(255, 255, 255)
+			Input.PlaceholderText = placeholder or "Type..."
+			Input.Font = Enum.Font.Gotham
+			Input.TextSize = 14
+			Instance.new("UICorner", Input)
+			Input.FocusLost:Connect(function(enter) if enter then callback(Input.Text) end end)
+		end
+
 		return Elements, Page
 	end
 
-	-- Settings
-	local Settings, SetPage = Byrdz:CreateTab("Settings", true)
-	SetPage.Visible = true
-	local DropFrame = Instance.new("Frame", SetPage)
-	DropFrame.Size = UDim2.new(0.95, 0, 0, 45)
-	DropFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	DropFrame.ClipsDescendants = true
-	Instance.new("UICorner", DropFrame)
-	local ToggleBtn = Instance.new("TextButton", DropFrame)
-	ToggleBtn.Size = UDim2.new(1, 0, 0, 45)
-	ToggleBtn.BackgroundTransparency = 1
-	ToggleBtn.Text = "  ▼ SELECT THEME"
-	ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	ToggleBtn.Font = Enum.Font.GothamBold
-	ToggleBtn.TextSize = 15
-	ToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
-	Instance.new("UIListLayout", DropFrame)
-	ToggleBtn.MouseButton1Click:Connect(function()
-		local d = DropFrame.Size.Y.Offset == 45
-		TweenService:Create(DropFrame, TweenInfo.new(0.3), {Size = UDim2.new(0.95, 0, 0, d and 350 or 45)}):Play()
-	end)
-	for n, v in pairs(UIThemes) do
-		local O = Instance.new("TextButton", DropFrame)
-		O.Size = UDim2.new(1, 0, 0, 35)
-		O.BackgroundTransparency = 1
-		O.Text = "      " .. n
-		O.TextColor3 = v
-		O.Font = Enum.Font.GothamBold
-		O.MouseButton1Click:Connect(function()
-			TopBar.BackgroundColor3 = v
-			OpenButton.BackgroundColor3 = v
-		end)
-	end
-
-	CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false OpenButton.Visible = true end)
-	OpenButton.MouseButton1Click:Connect(function() MainFrame.Visible = true OpenButton.Visible = false end)
+	-- Dragging Logic
 	local d, ds, sp
 	TopBar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then d = true ds = i.Position sp = MainFrame.Position end end)
 	UserInputService.InputChanged:Connect(function(i) if d and i.UserInputType == Enum.UserInputType.MouseMovement then local del = i.Position - ds MainFrame.Position = UDim2.new(sp.X.Scale, sp.X.Offset + del.X, sp.Y.Scale, sp.Y.Offset + del.Y) end end)
 	UserInputService.InputEnded:Connect(function() d = false end)
-
+	
 	return Byrdz
 end
 
--- [[ CLEAN EXECUTION ]]
-local Lib = Byrdz:CreateWindow("Panel") 
-
--- Start adding your real tabs and buttons below!
+return Byrdz

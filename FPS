@@ -1,0 +1,203 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = player:GetMouse()
+
+-- 1. UI CORE
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "FPS_MENU_V11_7"
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 520, 0, 420)
+mainFrame.Position = UDim2.new(0.5, -260, 0.5, -210)
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+mainFrame.Active = true
+mainFrame.Draggable = true
+Instance.new("UICorner", mainFrame)
+
+-- OPEN BUTTON
+local openBtn = Instance.new("TextButton", screenGui)
+openBtn.Size = UDim2.new(0, 160, 0, 50)
+openBtn.Position = UDim2.new(0.5, -80, 0.02, 0)
+openBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+openBtn.Text = "OPEN MENU"
+openBtn.Font = Enum.Font.GothamBold; openBtn.TextSize = 20; openBtn.TextColor3 = Color3.new(1,1,1)
+openBtn.Visible = false
+Instance.new("UICorner", openBtn)
+
+-- Header
+local header = Instance.new("Frame", mainFrame)
+header.Size = UDim2.new(1, 0, 0, 55)
+header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", header)
+
+local title = Instance.new("TextLabel", header)
+title.Size = UDim2.new(1, 0, 1, 0); title.Position = UDim2.new(0, 20, 0, 0)
+title.Text = "FPS MENU"; title.Font = Enum.Font.GothamBold; title.TextSize = 24
+title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1; title.TextXAlignment = Enum.TextXAlignment.Left
+
+local minBtn = Instance.new("TextButton", header)
+minBtn.Size = UDim2.new(0, 50, 0, 50); minBtn.Position = UDim2.new(1, -55, 0, 0)
+minBtn.Text = "—"; minBtn.Font = Enum.Font.GothamBold; minBtn.TextSize = 25; minBtn.TextColor3 = Color3.new(1,1,1); minBtn.BackgroundTransparency = 1
+
+-- Sidebar/Container
+local sidebar = Instance.new("Frame", mainFrame)
+sidebar.Size = UDim2.new(0, 140, 1, -55); sidebar.Position = UDim2.new(0, 0, 0, 55)
+sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Instance.new("UIListLayout", sidebar)
+
+local container = Instance.new("Frame", mainFrame)
+container.Size = UDim2.new(1, -150, 1, -70); container.Position = UDim2.new(0, 145, 0, 65)
+container.BackgroundTransparency = 1
+
+-- 2. SETTINGS
+local sets = {
+    aimbot = false, masterEsp = false, infJump = false, rainbow = false, 
+    color = Color3.fromRGB(255, 0, 0)
+}
+
+-- 3. UPDATED VISIBILITY CHECK (The Reliable Fix)
+local function isPartVisible(part)
+    if not part then return false end
+    local char = player.Character
+    if not char then return false end
+    
+    -- Built-in Roblox check: ignores accessories and own character
+    local ignoreList = {char, part.Parent}
+    local obscuringParts = camera:GetPartsObscuringTarget({part.Position}, ignoreList)
+    
+    return #obscuringParts == 0
+end
+
+-- 4. AIMBOT ENGINE
+RunService.RenderStepped:Connect(function()
+    if sets.aimbot then
+        local target, closestDist = nil, math.huge
+        
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local head = p.Character:FindFirstChild("Head")
+                local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                
+                if head and hum and hum.Health > 0 then
+                    local pos, onScreen = camera:WorldToViewportPoint(head.Position)
+                    
+                    if onScreen then
+                        -- Check if there's a clear path to the head
+                        if isPartVisible(head) then
+                            local mouseDist = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+                            if mouseDist < closestDist then
+                                closestDist = mouseDist
+                                target = head
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        if target then
+            camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+        end
+    end
+end)
+
+-- 5. MENU PAGES
+local pages = {}
+local function createPage(name)
+    local p = Instance.new("ScrollingFrame", container)
+    p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false
+    p.CanvasSize = UDim2.new(0,0,1.5,0); p.ScrollBarThickness = 2
+    pages[name] = p
+    Instance.new("UIListLayout", p).Padding = UDim.new(0, 10)
+    
+    local b = Instance.new("TextButton", sidebar)
+    b.Size = UDim2.new(1, 0, 0, 65); b.Text = name:upper(); b.Font = Enum.Font.GothamBold; b.TextSize = 18
+    b.BackgroundColor3 = Color3.fromRGB(25, 25, 25); b.TextColor3 = Color3.new(1,1,1)
+    b.MouseButton1Click:Connect(function()
+        for _, v in pairs(pages) do v.Visible = false end
+        p.Visible = true
+    end)
+    return p
+end
+
+local function toggle(p, txt, callback)
+    local b = Instance.new("TextButton", p)
+    b.Size = UDim2.new(0.95, 0, 0, 60); b.Text = txt .. ": OFF"; b.Font = Enum.Font.GothamBold; b.TextSize = 20
+    b.BackgroundColor3 = Color3.fromRGB(35, 35, 35); b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function()
+        local s = callback()
+        b.Text = txt .. ": " .. (s and "ON" or "OFF")
+        b.BackgroundColor3 = s and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(35,35,35)
+    end)
+end
+
+local combat = createPage("Combat")
+local visual = createPage("Visual")
+local move = createPage("Move")
+
+toggle(combat, "AIMBOT", function() sets.aimbot = not sets.aimbot return sets.aimbot end)
+toggle(visual, "MASTER ESP", function() sets.masterEsp = not sets.masterEsp return sets.masterEsp end)
+toggle(move, "INFINITE JUMP", function() sets.infJump = not sets.infJump return sets.infJump end)
+
+-- 6. ESP & COLOR GRID
+RunService.RenderStepped:Connect(function()
+    if sets.rainbow then sets.color = Color3.fromHSV(tick() % 5 / 5, 1, 1) end
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= player and v.Character then
+            local char = v.Character
+            local folder = char:FindFirstChild("AdminESP") or Instance.new("Folder", char); folder.Name = "AdminESP"
+            if sets.masterEsp then
+                local h = char:FindFirstChildOfClass("Highlight") or Instance.new("Highlight", char)
+                h.FillColor = sets.color; h.Enabled = true
+                if char:FindFirstChild("HumanoidRootPart") then
+                    local l = folder:FindFirstChild("Tracer") or Instance.new("SelectionPartLasso", folder)
+                    l.Name = "Tracer"; l.Part = char.HumanoidRootPart; l.Color3 = sets.color; l.Humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                end
+            else
+                folder:ClearAllChildren(); if char:FindFirstChildOfClass("Highlight") then char:FindFirstChildOfClass("Highlight").Enabled = false end
+            end
+        end
+    end
+end)
+
+local colorContainer = Instance.new("Frame", visual)
+colorContainer.Size = UDim2.new(0.95, 0, 0, 100); colorContainer.BackgroundTransparency = 1
+local grid = Instance.new("UIGridLayout", colorContainer); grid.CellSize = UDim2.new(0, 42, 0, 42)
+local colors = {Color3.new(1,0,0), Color3.new(0,1,0), Color3.new(0,0,1), Color3.new(1,1,1), Color3.new(1,1,0), Color3.new(1,0,1), Color3.new(0,1,1), Color3.new(1,0.5,0)}
+for _, c in ipairs(colors) do
+    local cb = Instance.new("TextButton", colorContainer); cb.Text = ""; cb.BackgroundColor3 = c
+    Instance.new("UICorner", cb); cb.MouseButton1Click:Connect(function() sets.color = c; sets.rainbow = false end)
+end
+local rb = Instance.new("TextButton", colorContainer); rb.Text = "RBW"; rb.TextSize = 12; rb.Font = Enum.Font.GothamBold; rb.TextColor3 = Color3.new(1,1,1); rb.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local rbGrad = Instance.new("UIGradient", rb); rbGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(1,0,0)), ColorSequenceKeypoint.new(1, Color3.new(0,0,1))})
+Instance.new("UICorner", rb); rb.MouseButton1Click:Connect(function() sets.rainbow = not sets.rainbow end)
+
+-- 7. SYSTEM
+UserInputService.JumpRequest:Connect(function()
+    if sets.infJump and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+minBtn.MouseButton1Click:Connect(function() mainFrame.Visible = false; openBtn.Visible = true end)
+openBtn.MouseButton1Click:Connect(function() mainFrame.Visible = true; openBtn.Visible = false end)
+
+local function createInput(page, label, def, cb)
+    local f = Instance.new("Frame", page); f.Size = UDim2.new(0.95, 0, 0, 70); f.BackgroundTransparency = 1
+    local l = Instance.new("TextLabel", f); l.Size = UDim2.new(0.6, 0, 1, 0); l.Text = label; l.TextSize = 22; l.Font = Enum.Font.GothamBold; l.TextColor3 = Color3.new(1,1,1); l.BackgroundTransparency = 1
+    local i = Instance.new("TextBox", f); i.Size = UDim2.new(0.35, 0, 0.7, 0); i.Position = UDim2.new(0.6, 0, 0.15, 0); i.BackgroundColor3 = Color3.fromRGB(40,40,40); i.Text = tostring(def); i.TextSize = 22; i.TextColor3 = Color3.new(0,1,0); i.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", i)
+    i.FocusLost:Connect(function() cb(tonumber(i.Text) or def) end)
+end
+
+createInput(move, "WALKSPEED", 16, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
+createInput(move, "JUMP POWER", 50, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.JumpPower = v end end)
+createInput(visual, "SET FOV", 70, function(v) camera.FieldOfView = v end)
+
+pages["Combat"].Visible = true
